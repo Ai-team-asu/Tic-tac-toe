@@ -79,8 +79,49 @@ class TicTacToe:
                 if win:
                     return player
 
+    def gameOver(self):
+        """Return True if X wins, O wins, or draw, else return False"""
+        if self.checkWin() != None:
+            return True
+        for i in self.board:
+            if i == " ":
+                return False
+        return True
 
-  def alphabeta(self, node):
+    def minimax(self, node, depth, player):
+        """
+        Recursively analyze every possible game state and choose
+        the best move location.
+        node - the board
+        depth - how far down the tree to look
+        player - what player to analyze best move for (currently setup up ONLY for "O")
+
+        """
+        if self.gameOver():
+            b = self.whoWon()
+            if b == "O":
+                return 1
+            elif b == "X":
+                return -1
+            else:
+                return 0
+
+        if player == "O":
+            val = -oo
+            for child in self.availableMoves():
+                self.makeMove(child, player)
+                val = max(val, self.minimax(node, depth - 1, changePlayer(player)))
+                self.makeMove(child, " ")
+            return val
+        else:
+            val = oo
+            for child in self.availableMoves():
+                self.makeMove(child, player)
+                val = min(val, self.minimax(node, depth - 1, changePlayer(player)))
+                self.makeMove(child, " ")
+            return val
+
+    def alphabeta(self, node):
         val = self.min_val(node, -oo, oo)
         return val
 
@@ -157,3 +198,27 @@ def make_best_move(board, depth, player):
         return random.choice(choices)
     else:
         return random.choice(board.availableMoves())
+
+
+# Actual game
+if __name__ == '__main__':
+    game = TicTacToe()
+    game.show()
+
+    while game.gameOver() == False:
+
+        isValid = False
+        while not isValid:
+            person_move = int(input("You are X: Choose number from 1-9: "))
+            isValid = game.makeMove(person_move - 1, "X")
+        game.show()
+
+        if game.gameOver() == True:
+            break
+
+        print("Computer choosing move...")
+        ai_move = make_best_move(game, -1, "O")
+        game.makeMove(ai_move, "O")
+        game.show()
+
+print("Game Over. " + game.whoWon() + " Wins")
